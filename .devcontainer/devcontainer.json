@@ -1,8 +1,9 @@
 {
   "name": "Azure Functions & Python 3",
   "dockerFile": "Dockerfile",
-  "forwardPorts": [7071],
-
+  "forwardPorts": [
+    7071
+  ],
   // Configure tool-specific properties.
   "customizations": {
     // Configure properties specific to VS Code.
@@ -16,10 +17,8 @@
       ]
     }
   },
-
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash ./.devcontainer/post-install.sh",
-
   // Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "vscode",
   "features": {
