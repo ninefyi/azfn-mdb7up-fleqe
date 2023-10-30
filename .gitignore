@@ -49,3 +49,4 @@ __azurite_db*__.json
 
 mongo_crypt_shared
 *.tgz
+appsettings.json
