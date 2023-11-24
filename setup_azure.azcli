@@ -1,0 +1,40 @@
+# az login --use-device-code
+# az login --tenant [your tenant] --use-device-code
+# Initialize Variables
+AZ_PREFIX=azfleqe
+RG_NAME=$AZ_PREFIX-rg
+KV_NAME=$AZ_PREFIX-kv
+ST_NAME=${AZ_PREFIX}st
+FUNC_NAME=$AZ_PREFIX-funcapp
+ASP_NAME=$AZ_PREFIX-asp
+LOCATION=southeastasia
+APP_REG_NAME=$AZ_PREFIX-app-reg
+VAULT_KEY_NAME=$AZ_PREFIX-vault-key
+# Get Tenant ID
+TENANT_ID=$(az account show --query tenantId --output tsv)
+# register an application on Azure Active Directory,
+# az ad app create --display-name $APP_REG_NAME
+CLIENT_ID=$(az ad app create --display-name $APP_REG_NAME --query appId --output tsv)
+CLIENT_SECRET=$(az ad app credential reset --id $CLIENT_ID --append --display-name "MASTER_KEY" --years 99 --query password --output tsv)
+# # Create Azure resource groups
+az group create --name $RG_NAME --location $LOCATION
+# Create Azure Key vault
+az keyvault create --name $KV_NAME --resource-group $RG_NAME --location $LOCATION
+az keyvault set-policy --name $KV_NAME --object-id $CLIENT_ID --key-permissions get list unwrapKey wrapKey --secret-permissions get list --resource-group $RG_NAME
+az keyvault key create --vault-name "$KV_NAME" -n $VAULT_KEY_NAME --protection software
+KV_ID=$(az keyvault key show --name "$VAULT_KEY_NAME" --vault-name "$KV_NAME" --query "key.kid" --output tsv)
+KV_VERSION=${KV_ID: -32}
+az storage account create -n $ST_NAME -g $RG_NAME -l $LOCATION --sku Standard_LRS
+# az functionapp plan create --location $LOCATION --name $ASP_NAME --number-of-workers 1 --resource-group $RG_NAME --sku B1
+# az functionapp create -g $RG_NAME -p $ASP_NAME -n $FUNC_NAME -s $ST_NAME --functions-version 4
+
+az functionapp create --resource-group $RG_NAME --consumption-plan-location $LOCATION --runtime python --runtime-version 3.10 --functions-version 4 --name $FUNC_NAME --os-type linux --storage-account $ST_NAME
+
+# Part 1
+echo "TENANT_ID=$TENANT_ID"
+echo "CLIENT_ID=$CLIENT_ID"
+echo "CLIENT_SECRET=$CLIENT_SECRET"
+# Part 2
+echo "KV_NAME=$KV_NAME"
+echo "KV_ID=$KV_ID"
+echo "KV_VERSION=$KV_VERSION"

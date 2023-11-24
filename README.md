@@ -1,8 +1,12 @@
-# Azure Function with Queryable Encryption (QE) in MongoDB 7up
+# Azure Function with Field Level Encryption - Queryable Encryption (FLE-QE) in MongoDB 7up
 
 ## References
 
 * [How to deploy Azure Functions locally](https://learn.microsoft.com/en-us/azure/azure-functions) - It is not support M1-M2 for QE.
+https://techcommunity.microsoft.com/t5/azure-compute-blog/azure-functions-v2-python-programming-model-is-generally/ba-p/3827474
+https://techcommunity.microsoft.com/t5/azure-compute-blog/azure-functions-v2-python-programming-model/ba-p/3665168?ocid=AID754288&wt.mc_id=azfr-c9-scottha,CFID0741
+https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-python?tabs=asgi%2Capplication-level&pivots=python-mode-decorators#folder-structure
+https://stackoverflow.com/questions/58318794/import-custom-modules-in-azure-python-function
 * Create .env and provide information below
 ```
 export MONGODB_URI=""
