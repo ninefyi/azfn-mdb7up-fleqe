@@ -1,4 +1,4 @@
-# Azure Function with Field Level Encryption - Queryable Encryption (FLE-QE) 
+# Azure Function with Queryable Encryption and Field Level Encryption (QE-FLE) 
 
 ## References
 
