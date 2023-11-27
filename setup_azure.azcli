@@ -1,40 +1,47 @@
 # az login --use-device-code
 # az login --tenant [your tenant] --use-device-code
 # Initialize Variables
-AZ_PREFIX=azfleqe
-RG_NAME=$AZ_PREFIX-rg
-KV_NAME=$AZ_PREFIX-kv
-ST_NAME=${AZ_PREFIX}st
-FUNC_NAME=$AZ_PREFIX-funcapp
-ASP_NAME=$AZ_PREFIX-asp
-LOCATION=southeastasia
-APP_REG_NAME=$AZ_PREFIX-app-reg
-VAULT_KEY_NAME=$AZ_PREFIX-vault-key
+AZURE_PREFIX=qefle
+AZURE_RESOURCE_GROUP_NAME=$AZURE_PREFIX-rg
+AZURE_KEY_NAME=$AZURE_PREFIX-kv
+AZURE_STORAGE_NAME=${AZURE_PREFIX}st
+AZURE_FUNC_NAME=$AZURE_PREFIX-funcapp
+AZURE_APP_SERVICE_PLAN_NAME=$AZURE_PREFIX-asp
+AZURE_LOCATION=southeastasia
+AZURE_APP_REG_NAME=$AZURE_PREFIX-app-reg
+AZURE_KEY_VAULT_NAME=$AZURE_PREFIX-vault-key
 # Get Tenant ID
-TENANT_ID=$(az account show --query tenantId --output tsv)
+AZURE_TENANT_ID=$(az account show --query tenantId --output tsv)
 # register an application on Azure Active Directory,
-# az ad app create --display-name $APP_REG_NAME
-CLIENT_ID=$(az ad app create --display-name $APP_REG_NAME --query appId --output tsv)
-CLIENT_SECRET=$(az ad app credential reset --id $CLIENT_ID --append --display-name "MASTER_KEY" --years 99 --query password --output tsv)
+AZURE_CLIENT_ID=$(az ad sp create-for-rbac --name $AZURE_APP_REG_NAME --query appId --output tsv)
+AZURE_CLIENT_SECRET=$(az ad sp credential reset --id $AZURE_CLIENT_ID --append --display-name "MASTER_KEY" --years 99 --query password --output tsv)
 # # Create Azure resource groups
-az group create --name $RG_NAME --location $LOCATION
+az group create --name $AZURE_RESOURCE_GROUP_NAME --location $AZURE_LOCATION
 # Create Azure Key vault
-az keyvault create --name $KV_NAME --resource-group $RG_NAME --location $LOCATION
-az keyvault set-policy --name $KV_NAME --object-id $CLIENT_ID --key-permissions get list unwrapKey wrapKey --secret-permissions get list --resource-group $RG_NAME
-az keyvault key create --vault-name "$KV_NAME" -n $VAULT_KEY_NAME --protection software
-KV_ID=$(az keyvault key show --name "$VAULT_KEY_NAME" --vault-name "$KV_NAME" --query "key.kid" --output tsv)
-KV_VERSION=${KV_ID: -32}
-az storage account create -n $ST_NAME -g $RG_NAME -l $LOCATION --sku Standard_LRS
-# az functionapp plan create --location $LOCATION --name $ASP_NAME --number-of-workers 1 --resource-group $RG_NAME --sku B1
-# az functionapp create -g $RG_NAME -p $ASP_NAME -n $FUNC_NAME -s $ST_NAME --functions-version 4
+az keyvault create --name $AZURE_KEY_NAME --resource-group $AZURE_RESOURCE_GROUP_NAME --location $AZURE_LOCATION
+az keyvault set-policy --name $AZURE_KEY_NAME --spn $AZURE_CLIENT_ID --key-permissions get list unwrapKey wrapKey --secret-permissions get list --resource-group $AZURE_RESOURCE_GROUP_NAME
+az keyvault key create --vault-name "$AZURE_KEY_NAME" -n "$AZURE_KEY_VAULT_NAME" --protection software
+AZURE_KEY_VAULT_ENDPOINT=$(az keyvault key show --name "$AZURE_KEY_VAULT_NAME" --vault-name "$AZURE_KEY_NAME" --query "key.kid" --output tsv)
+AZURE_KEY_VAULT_VERSION=${AZURE_KEY_VAULT_ENDPOINT: -32}
+az storage account create -n $AZURE_STORAGE_NAME -g $AZURE_RESOURCE_GROUP_NAME -l $AZURE_LOCATION --sku Standard_LRS --allow-blob-public-access false
 
-az functionapp create --resource-group $RG_NAME --consumption-plan-location $LOCATION --runtime python --runtime-version 3.10 --functions-version 4 --name $FUNC_NAME --os-type linux --storage-account $ST_NAME
+# Azure Function Consumption Plan
+az functionapp create --resource-group $AZURE_RESOURCE_GROUP_NAME --consumption-plan-location $AZURE_LOCATION --runtime python --runtime-version 3.10 --functions-version 4 --name $AZURE_FUNC_NAME --os-type linux --storage-account $AZURE_STORAGE_NAME
 
 # Part 1
-echo "TENANT_ID=$TENANT_ID"
-echo "CLIENT_ID=$CLIENT_ID"
-echo "CLIENT_SECRET=$CLIENT_SECRET"
+echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+echo "AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET"
 # Part 2
-echo "KV_NAME=$KV_NAME"
-echo "KV_ID=$KV_ID"
-echo "KV_VERSION=$KV_VERSION"
+echo "AZURE_KEY_NAME=$AZURE_KEY_NAME"
+echo "AZURE_KEY_VAULT_ENDPOINT=$AZURE_KEY_VAULT_ENDPOINT"
+echo "AZURE_KEY_VAULT_VERSION=$AZURE_KEY_VAULT_VERSION"
+
+cat <<EOF >> ./pyqefle/.env
+export AZURE_TENANT_ID="$AZURE_TENANT_ID"
+export AZURE_CLIENT_ID="$AZURE_CLIENT_ID"
+export AZURE_CLIENT_SECRET="$AZURE_CLIENT_SECRET"
+export AZURE_KEY_NAME="$AZURE_KEY_NAME"
+export AZURE_KEY_VAULT_VERSION="$AZURE_KEY_VAULT_VERSION"
+export AZURE_KEY_VAULT_ENDPOINT="$AZURE_KEY_VAULT_ENDPOINT"
+EOF

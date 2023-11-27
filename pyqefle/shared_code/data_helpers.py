@@ -1,6 +1,11 @@
 from pymongo import MongoClient
+from dotenv import load_dotenv
 import shared_code.qe_helpers as helpers
 import os
+
+if os.environ["AzureWebJobsStorage"] == "UseDevelopmentStorage=true":
+    load_dotenv()
+
 def read_data() -> str:
     uri =  os.environ['MONGODB_URI']
     encrypt_client = MongoClient(uri)

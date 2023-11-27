@@ -53,7 +53,7 @@ export AZURE_KEY_VAULT_ENDPOINT=""
     "value": ""
   },
   {
-    "name": "AZURE_KEY_VERSION",
+    "name": "AZURE_KEY_VAULT_VERSION",
     "slotSetting": false,
     "value": ""
   },
