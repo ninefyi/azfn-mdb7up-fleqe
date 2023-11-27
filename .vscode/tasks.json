@@ -9,7 +9,7 @@
 			"isBackground": true,
 			"dependsOn": "pip install (functions)",
 			"options": {
-				"cwd": "${workspaceFolder}/pyqe"
+				"cwd": "${workspaceFolder}/pyqefle"
 			}
 		},
 		{
@@ -26,7 +26,7 @@
 			},
 			"problemMatcher": [],
 			"options": {
-				"cwd": "${workspaceFolder}/pyqe"
+				"cwd": "${workspaceFolder}/pyqefle"
 			}
 		}
 	]
